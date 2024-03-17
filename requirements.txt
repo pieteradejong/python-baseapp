@@ -1,1 +1,4 @@
-python-dotenv
+black==23.3.0
+ruff==0.0.90
+pytest==7.2.0
+python-dotenv==0.21.0

@@ -13,26 +13,33 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.9
 
+    - name: Create and activate virtual environment
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install black ruff pytest
+        pip install --upgrade pip
+        pip install -r requirements.txt
 
     - name: Check code formatting with black
       run: |
+        source venv/bin/activate
         black --check .
 
     - name: Lint with ruff
       run: |
+        source venv/bin/activate
         ruff . --exclude src/library.py
-
 
     - name: Run pytest
       run: |
+        source venv/bin/activate
         pytest
-
