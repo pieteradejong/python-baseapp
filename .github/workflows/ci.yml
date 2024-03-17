@@ -37,7 +37,7 @@ jobs:
     - name: Lint with ruff
       run: |
         source venv/bin/activate
-        ruff . --exclude src/library.py
+        ruff .
 
     - name: Run pytest
       run: |

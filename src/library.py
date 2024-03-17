@@ -1,3 +1,5 @@
+from enum import Enum
+import csv
 """
 Libary of re-usable functionality.
 """
@@ -8,7 +10,7 @@ Below: Usage for colors:
 
 """
 
-from enum import Enum
+
 
 
 class TextColor(Enum):
@@ -36,12 +38,13 @@ print_colored("This is green text!", TextColor.GREEN)
 """
 
 
-import csv
+
 
 
 def read_csv_file(file_path: str) -> list:
     """
-    Reads a CSV file and returns a list of dictionaries, where each dictionary represents a row in the CSV,
+    Reads a CSV file and returns a list of dictionaries, 
+    where each dictionary represents a row in the CSV,
     with the column headers as keys.
 
     :param file_path: The path to the CSV file.
