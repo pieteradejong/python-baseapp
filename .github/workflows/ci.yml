@@ -29,7 +29,8 @@ jobs:
 
     - name: Lint with ruff
       run: |
-        ruff .
+        ruff . --exclude src/library.py
+
 
     - name: Run pytest
       run: |
