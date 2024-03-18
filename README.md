@@ -1,5 +1,8 @@
 # Python base app
 
+[![python-baseapp](https://github.com/pieteradejong/python-baseapp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pieteradejong/python-baseapp/actions/workflows/ci.yml)
+
+
 ## Goal
 Template for future projects, incorporating best practices and essential project setup steps, including: 
 * init.sh script
