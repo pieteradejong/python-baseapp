@@ -3,6 +3,7 @@ import csv
 import logging
 import json
 import sys
+
 """
 Libary of re-usable functionality.
 """
@@ -12,8 +13,6 @@ Libary of re-usable functionality.
 Below: Usage for colors:
 
 """
-
-
 
 
 class TextColor(Enum):
@@ -41,12 +40,9 @@ print_colored("This is green text!", TextColor.GREEN)
 """
 
 
-
-
-
 def read_csv_file(file_path: str) -> list:
     """
-    Reads a CSV file and returns a list of dictionaries, 
+    Reads a CSV file and returns a list of dictionaries,
     where each dictionary represents a row in the CSV,
     with the column headers as keys.
 
@@ -64,11 +60,13 @@ def read_csv_file(file_path: str) -> list:
 """
 Load config from json.
 """
+
+
 def load_config():
     try:
-        with open('config.json', 'r') as f:
+        with open("config.json", "r") as f:
             config = json.load(f)
-            if 'CANDIDATE_ID' not in config or not config['CANDIDATE_ID']:
+            if "CANDIDATE_ID" not in config or not config["CANDIDATE_ID"]:
                 raise ValueError("CANDIDATE_ID is not set in the config file.")
             return config
     except FileNotFoundError:
