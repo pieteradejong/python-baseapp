@@ -1,5 +1,8 @@
 from enum import Enum
 import csv
+import logging
+import json
+import sys
 """
 Libary of re-usable functionality.
 """
@@ -56,3 +59,24 @@ def read_csv_file(file_path: str) -> list:
         for row in reader:
             data.append(row)
     return data
+
+
+"""
+Load config from json.
+"""
+def load_config():
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            if 'CANDIDATE_ID' not in config or not config['CANDIDATE_ID']:
+                raise ValueError("CANDIDATE_ID is not set in the config file.")
+            return config
+    except FileNotFoundError:
+        logging.error("The configuration file config.json does not exist.")
+        sys.exit(1)
+    except json.JSONDecodeError:
+        logging.error("Error decoding config.json. Ensure it is valid JSON.")
+        sys.exit(1)
+    except Exception as e:
+        logging.error("An unexpected error occurred: %s", e)
+        sys.exit(1)
