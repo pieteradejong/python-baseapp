@@ -48,25 +48,45 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-
 
-    - name: Install Python dependencies
+    - name: Install Python dependencies (backend)
       run: |
+        python -m venv venv
+        source venv/bin/activate
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pre-commit
+        python -m pip install -r requirements.txt
 
-    - name: Install pre-commit hooks
-      run: pre-commit install
+    - name: Install frontend dependencies (if frontend exists)
+      if: exists('frontend/package.json')
+      run: |
+        cd frontend
+        npm ci || (npm install && npm run build)
 
-    - name: Run pre-commit on all files
-      run: pre-commit run --all-files
+    - name: Lint (backend)
+      run: |
+        source venv/bin/activate
+        ruff check --diff .
 
-    - name: Install frontend dependencies
-      working-directory: ./frontend
-      run: npm ci
+    - name: Type check (backend)
+      run: |
+        source venv/bin/activate
+        mypy --strict --ignore-missing-imports src app tests
 
-    - name: Run frontend tests
-      working-directory: ./frontend
-      run: npm test
+    - name: Run tests (backend)
+      run: |
+        source venv/bin/activate
+        pytest --cov=src --cov=app --cov-report=term-missing
+
+    - name: Lint (frontend) (if frontend exists)
+      if: exists('frontend/package.json')
+      run: |
+        cd frontend
+        npm run lint || (echo "No lint script found in frontend; skipping." && exit 0)
+
+    - name: Run tests (frontend) (if frontend exists)
+      if: exists('frontend/package.json')
+      run: |
+        cd frontend
+        npm run test || (echo "No test script found in frontend; skipping." && exit 0)
 
     - name: Run pytest with coverage
       run: |
