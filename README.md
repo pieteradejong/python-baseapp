@@ -154,7 +154,9 @@ Key points about our dependencies:
    - Verify Python 3.12.2 is installed
    - Create a virtual environment with Python 3.12.2
    - Install Python dependencies
-   - Install frontend dependencies (if frontend/ exists)
+   - **If no frontend/ exists, automatically create a new Vite + React app in frontend/**
+   - **Fully reset the frontend: removes all caches, node_modules, dist, .vite, and other build artifacts**
+   - Install frontend dependencies and build the frontend
    - Set up pre-commit hooks
    - Clean up any existing caches
 
@@ -245,15 +247,141 @@ If you encounter issues:
 
 ### Testing
 
-Run tests with pytest:
-```bash
-pytest tests/
+This project follows a lean, practical testing approach focused on critical functionality and fast feedback:
+
+#### Test Structure
+```
+tests/
+├── conftest.py           # Shared test fixtures
+├── unit/                 # Unit tests
+│   ├── test_config.py   # Configuration tests
+│   ├── test_logging.py  # Logging tests
+│   └── test_api.py      # API endpoint tests
+└── integration/         # Integration tests
+    └── test_app.py      # Application integration tests
 ```
 
-For coverage report:
-```bash
-pytest --cov=src tests/
-```
+#### Running Tests
+
+1. **Run all tests**:
+   ```bash
+   pytest
+   ```
+
+2. **Run with coverage**:
+   ```bash
+   pytest --cov=src
+   ```
+
+3. **Run specific test categories**:
+   ```bash
+   # Run unit tests only
+   pytest tests/unit/
+   
+   # Run integration tests only
+   pytest tests/integration/
+   
+   # Run specific test file
+   pytest tests/unit/test_config.py
+   ```
+
+4. **Run tests in parallel** (faster):
+   ```bash
+   pytest -n auto
+   ```
+
+#### Test Categories
+
+1. **Configuration Tests**
+   - Environment variable loading
+   - Configuration validation
+   - Default values
+   - JSON config loading
+
+2. **Logging Tests**
+   - Console logging setup
+   - File logging setup
+   - Log level configuration
+   - Log format validation
+
+3. **API Tests** (when endpoints are added)
+   - Endpoint functionality
+   - Request validation
+   - Error handling
+   - Response formats
+
+4. **Integration Tests**
+   - Application startup
+   - Service initialization
+   - Component interaction
+   - Error recovery
+
+#### Testing Philosophy
+
+We focus on:
+- ✅ Critical functionality
+- ✅ Fast feedback
+- ✅ Clear failure messages
+- ✅ Minimal setup
+- ✅ Practical coverage
+
+We avoid:
+- ❌ Testing implementation details
+- ❌ Complex test setup
+- ❌ Slow tests
+- ❌ Test duplication
+- ❌ Over-engineering
+
+#### Test Development
+
+1. **Adding New Tests**:
+   ```python
+   # tests/unit/test_example.py
+   def test_feature():
+       """Test description."""
+       # Arrange
+       setup = create_test_setup()
+       
+       # Act
+       result = feature_under_test(setup)
+       
+       # Assert
+       assert result == expected_value
+   ```
+
+2. **Using Fixtures**:
+   ```python
+   # Use existing fixtures
+   def test_with_fixture(app_config):
+       assert app_config.ENV == "testing"
+   
+   # Create new fixtures in conftest.py
+   @pytest.fixture
+   def new_fixture():
+       # Setup
+       resource = create_resource()
+       yield resource
+       # Cleanup
+       resource.cleanup()
+   ```
+
+3. **Best Practices**:
+   - Keep tests focused and atomic
+   - Use descriptive test names
+   - Document test purpose
+   - Clean up resources
+   - Use appropriate assertions
+   - Handle edge cases
+   - Test error conditions
+
+#### CI/CD Integration
+
+Tests are automatically run:
+- On every pull request
+- Before merging to main
+- With coverage reporting
+- In parallel for speed
+- With security checks
 
 ### Project Structure
 

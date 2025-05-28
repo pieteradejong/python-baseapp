@@ -57,21 +57,19 @@ echo -e "${green}📦 Installing Python dependencies ...${reset}"
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 
-# Frontend setup if frontend/ exists
+# Frontend setup: auto-create Vite React app if missing
+if [ ! -d "frontend" ]; then
+    echo -e "${green}⚡ Creating frontend/ with Vite + React ...${reset}"
+    npm create vite@latest frontend -- --template react --force
+fi
+
 if [ -d "frontend" ]; then
-    echo -e "${green}🧹 Cleaning frontend node_modules and dist ...${reset}"
-    rm -rf frontend/node_modules frontend/dist
-    
+    echo -e "${green}🧹 Cleaning frontend node_modules, dist, .vite, and caches ...${reset}"
+    rm -rf frontend/node_modules frontend/dist frontend/.vite frontend/.cache frontend/.eslintcache
+
     echo -e "${green}📦 Installing frontend dependencies ...${reset}"
     cd frontend
-    if [ -f "package-lock.json" ]; then
-        npm install
-    elif [ -f "yarn.lock" ]; then
-        yarn install
-    else
-        echo -e "${red}No package-lock.json or yarn.lock found in frontend/. Skipping frontend install.${reset}"
-    fi
-    
+    npm install
     # Build or start frontend
     if grep -q '"build"' package.json; then
         echo -e "${green}🏗️  Building frontend ...${reset}"
