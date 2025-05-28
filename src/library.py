@@ -3,6 +3,10 @@ import csv
 import logging
 import json
 import sys
+from pathlib import Path
+from typing import Any, Dict, Optional, TypedDict
+from pydantic import BaseModel, Field, validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 """
 Libary of re-usable functionality.
@@ -13,6 +17,50 @@ Libary of re-usable functionality.
 Below: Usage for colors:
 
 """
+
+
+class AppConfig(BaseSettings):
+    """Application configuration with environment variable support."""
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore"
+    )
+
+    # Environment
+    ENV: str = Field(default="development", env="APP_ENV")
+    DEBUG: bool = Field(default=False, env="APP_DEBUG")
+    
+    # Application
+    APP_NAME: str = Field(default="Python Base App", env="APP_NAME")
+    APP_VERSION: str = Field(default="0.1.0", env="APP_VERSION")
+    
+    # API
+    API_HOST: str = Field(default="0.0.0.0", env="API_HOST")
+    API_PORT: int = Field(default=8000, env="API_PORT")
+    
+    # Logging
+    LOG_LEVEL: str = Field(default="INFO", env="LOG_LEVEL")
+    LOG_FORMAT: str = Field(
+        default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        env="LOG_FORMAT"
+    )
+    LOG_FILE: Optional[Path] = Field(default=None, env="LOG_FILE")
+
+    @validator("ENV")
+    def validate_env(cls, v: str) -> str:
+        allowed = {"development", "testing", "production"}
+        if v not in allowed:
+            raise ValueError(f"ENV must be one of {allowed}")
+        return v
+
+    @validator("LOG_LEVEL")
+    def validate_log_level(cls, v: str) -> str:
+        allowed = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+        if v not in allowed:
+            raise ValueError(f"LOG_LEVEL must be one of {allowed}")
+        return v
 
 
 class TextColor(Enum):
@@ -26,8 +74,44 @@ class TextColor(Enum):
     REGULAR = "\033[0m"
 
 
-def print_colored(text: str, color: TextColor):
-    print(f"{color.value}{text}{TextColor.END.value}")
+def setup_logging(config: AppConfig) -> None:
+    """
+    Configure logging based on application settings.
+    
+    Args:
+        config: Application configuration object
+    """
+    log_handlers = []
+    
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter(config.LOG_FORMAT))
+    log_handlers.append(console_handler)
+    
+    # File handler if LOG_FILE is set
+    if config.LOG_FILE:
+        config.LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+        file_handler = logging.FileHandler(config.LOG_FILE)
+        file_handler.setFormatter(logging.Formatter(config.LOG_FORMAT))
+        log_handlers.append(file_handler)
+    
+    # Configure root logger
+    logging.basicConfig(
+        level=getattr(logging, config.LOG_LEVEL),
+        handlers=log_handlers,
+        force=True
+    )
+
+
+def print_colored(text: str, color: TextColor) -> None:
+    """
+    Print colored text to the terminal.
+    
+    Args:
+        text: Text to print
+        color: Color to use
+    """
+    print(f"{color.value}{text}{TextColor.REGULAR.value}")
 
 
 # from colors import TextColor, print_colored
@@ -40,20 +124,25 @@ print_colored("This is green text!", TextColor.GREEN)
 """
 
 
-def read_csv_file(file_path: str) -> list:
+def read_csv_file(file_path: str) -> list[Dict[str, Any]]:
     """
-    Reads a CSV file and returns a list of dictionaries,
-    where each dictionary represents a row in the CSV,
-    with the column headers as keys.
-
-    :param file_path: The path to the CSV file.
-    :return: A list of dictionaries.
+    Read a CSV file and return a list of dictionaries.
+    
+    Args:
+        file_path: Path to the CSV file
+        
+    Returns:
+        List of dictionaries where each dict represents a row
+        
+    Raises:
+        FileNotFoundError: If the file doesn't exist
+        csv.Error: If the CSV file is malformed
     """
     data = []
     with open(file_path, mode="r", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            data.append(row)
+            data.append(dict(row))
     return data
 
 
@@ -62,19 +151,43 @@ Load config from json.
 """
 
 
-def load_config():
+def load_json_config(file_path: str) -> Dict[str, Any]:
+    """
+    Load and validate JSON configuration file.
+    
+    Args:
+        file_path: Path to the JSON config file
+        
+    Returns:
+        Dictionary containing the configuration
+        
+    Raises:
+        FileNotFoundError: If the config file doesn't exist
+        json.JSONDecodeError: If the JSON is invalid
+        ValueError: If required fields are missing
+    """
     try:
-        with open("config.json", "r") as f:
+        with open(file_path, "r") as f:
             config = json.load(f)
-            if "CANDIDATE_ID" not in config or not config["CANDIDATE_ID"]:
-                raise ValueError("CANDIDATE_ID is not set in the config file.")
-            return config
+            
+        # Validate required fields
+        required_fields = {"CANDIDATE_ID"}
+        missing_fields = required_fields - set(config.keys())
+        if missing_fields:
+            raise ValueError(f"Missing required fields in config: {missing_fields}")
+            
+        return config
+        
     except FileNotFoundError:
-        logging.error("The configuration file config.json does not exist.")
-        sys.exit(1)
+        logging.error("Configuration file %s does not exist", file_path)
+        raise
     except json.JSONDecodeError:
-        logging.error("Error decoding config.json. Ensure it is valid JSON.")
-        sys.exit(1)
+        logging.error("Error decoding %s. Ensure it is valid JSON", file_path)
+        raise
     except Exception as e:
-        logging.error("An unexpected error occurred: %s", e)
-        sys.exit(1)
+        logging.error("Unexpected error loading config: %s", e)
+        raise
+
+
+# Initialize global config
+config = AppConfig()
