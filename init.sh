@@ -28,6 +28,44 @@ check_python_version() {
 # Check Python version first
 check_python_version
 
+# --- Environment Variable Management ---
+# Load .env file if present, but do not overwrite already-set environment variables
+if [ -f ".env" ]; then
+    # Only export variables that are not already set in the environment
+    while IFS='=' read -r key value; do
+        # Skip comments and empty lines
+        if [[ -z "$key" || "$key" =~ ^# ]]; then
+            continue
+        fi
+        # Only export if not already set
+        if [ -z "${!key}" ]; then
+            export "$key=$value"
+        fi
+    done < <(grep -v '^#' .env | grep -v '^$')
+fi
+
+# List of required environment variables (update as needed for your project)
+required_vars=(
+    "EXAMPLE_API_KEY"
+    "EXAMPLE_API_SECRET"
+    # Add more required variables here
+)
+missing_vars=()
+for var in "${required_vars[@]}"; do
+    if [ -z "${!var}" ]; then
+        missing_vars+=("$var")
+    fi
+done
+if [ ${#missing_vars[@]} -ne 0 ]; then
+    echo -e "${red}❌ Error: Missing required environment variables:${reset}"
+    for var in "${missing_vars[@]}"; do
+        echo -e "  - $var"
+    done
+    echo -e "${red}Please export these variables in your shell or add them to your .env file and source it.${reset}"
+    exit 1
+fi
+# --- End Environment Variable Management ---
+
 # Remove Python virtual environment if it exists
 echo -e "${green}🧹 Removing existing Python virtual environment (venv/) ...${reset}"
 rm -rf venv

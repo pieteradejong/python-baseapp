@@ -177,7 +177,15 @@ Key points about our dependencies:
    API_PORT=8000
    LOG_LEVEL=INFO
    LOG_FILE=app/logs/app.log
+   # Add any required secrets or API keys here (never hardcode in code)
    ```
+
+Alternatively, you can export variables in your shell before running `./init.sh`:
+```bash
+export APP_ENV=development
+export APP_DEBUG=true
+# ...
+```
 
 2. Create a `config.json` for application settings:
    ```json
@@ -460,3 +468,15 @@ This project follows strict development standards:
 ## License
 
 [Your chosen license]
+
+## Environment Variable Management
+
+This project follows best practices for environment variable management:
+
+- **Primary Source:** Environment variables set in the shell (e.g., via `export VAR=...` or in deployment environments) always take precedence.
+- **Fallback:** If a variable is not set in the environment, it is loaded from a `.env` file (if present), but never overwrites already-set variables.
+- **Validation:** All required environment variables are validated at startup by the `init.sh` script. If any are missing, a clear error is printed and initialization stops.
+- **Security:** Secrets must never be hardcoded or checked into version control. Only use `.env` or shell exports for secrets.
+- **Customization:** Update the `required_vars` list in `init.sh` to match your project's needs.
+
+**Tip:** To set environment variables, either export them in your shell or add them to a `.env` file in the project root. The `.env` file is loaded automatically during initialization, but will not overwrite variables already set in your environment.
