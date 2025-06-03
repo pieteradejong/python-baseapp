@@ -84,11 +84,6 @@ target-version = "py312"
 
 [tool.ruff.isort]
 known-first-party = ["backend", "tests"]
-section-defaults = [
-    { section = "FUTURE", prefix = "__future__" },
-    { section = "STDLIB", prefix = "typing" },
-    { section = "THIRDPARTY", prefix = "pydantic" },
-]
 combine-as-imports = true
 force-wrap-aliases = true
 
