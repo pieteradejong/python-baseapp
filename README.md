@@ -358,6 +358,142 @@ We avoid:
 - ❌ Test duplication
 - ❌ Over-engineering
 
+### Code Quality & Linting
+
+This project enforces strict code quality standards with automated tooling for fast feedback and consistent code style.
+
+#### Quick Commands
+
+```bash
+# Check code quality (fast)
+./lint.sh
+
+# Auto-fix issues
+./fix.sh
+
+# Check with type checking (slower)
+./lint.sh --with-types
+```
+
+#### Linting Tools
+
+1. **Ruff** - Fast Python linter and formatter
+   - Replaces multiple tools (flake8, isort, pyupgrade, etc.)
+   - Auto-fixes most issues
+   - Extremely fast execution
+
+2. **Black** - Code formatting
+   - Consistent, opinionated formatting
+   - Eliminates style debates
+   - Integrates with all editors
+
+3. **MyPy** - Type checking
+   - Strict type checking enabled
+   - Catches type errors before runtime
+   - Ensures type safety
+
+#### Manual Linting Commands
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Ruff linting
+ruff check backend/                    # Check for issues
+ruff check --fix backend/              # Auto-fix issues
+ruff check --diff backend/             # Show what would be fixed
+
+# Black formatting
+black backend/                         # Format code
+black --check backend/                 # Check formatting
+black --diff backend/                  # Show formatting changes
+
+# Type checking
+mypy --strict --ignore-missing-imports --explicit-package-bases backend/src backend/tests
+```
+
+#### Pre-commit Hooks
+
+Pre-commit hooks run automatically on `git commit` to catch issues early:
+
+```bash
+# Install pre-commit hooks (done automatically by init.sh)
+source venv/bin/activate
+pre-commit install
+
+# Run hooks manually on all files
+pre-commit run --all-files
+
+# Run specific hook
+pre-commit run ruff --all-files
+pre-commit run black --all-files
+```
+
+#### Configured Checks
+
+**Fast Local Checks (pre-commit):**
+- Trailing whitespace removal
+- End-of-file fixing
+- YAML/JSON validation
+- Python AST validation
+- Ruff linting with auto-fix
+- Black formatting
+- Basic security checks
+
+**Comprehensive Checks (CI/push):**
+- MyPy type checking
+- Bandit security scanning
+- Full test suite
+- Coverage reporting
+
+#### IDE Integration
+
+**VS Code:**
+```json
+{
+    "python.linting.enabled": true,
+    "python.linting.ruffEnabled": true,
+    "python.formatting.provider": "black",
+    "python.linting.mypyEnabled": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    }
+}
+```
+
+**PyCharm:**
+- Install Ruff plugin
+- Configure Black as external tool
+- Enable MyPy integration
+
+#### Configuration Files
+
+- **pyproject.toml** - Main configuration for all tools
+- **.pre-commit-config.yaml** - Pre-commit hook configuration
+- **lint.sh** - Local linting script
+- **fix.sh** - Auto-fix script
+
+#### Linting Philosophy
+
+**Fast Feedback:**
+- Local checks are fast (< 5 seconds)
+- Auto-fix most issues automatically
+- Clear, actionable error messages
+- Minimal configuration complexity
+
+**Practical Standards:**
+- Focus on real issues, not style preferences
+- Allow reasonable exceptions where needed
+- Balance strictness with development velocity
+- Consistent with modern Python practices
+
+**Developer Experience:**
+- Works in all major editors
+- Integrates with git workflow
+- Clear documentation
+- Easy to run and understand
+
 ### Project Structure
 
 ```
@@ -367,6 +503,8 @@ python-baseapp/
 ├── activate.sh           # Virtual environment activation
 ├── init.sh              # Environment setup
 ├── run.sh               # Service management
+├── lint.sh              # Code quality checking
+├── fix.sh               # Auto-fix linting issues
 ├── venv/                # Python virtual environment (not tracked by git)
 ├── frontend/            # Frontend code (Vite React app)
 │   ├── src/            # React components and logic
@@ -385,10 +523,9 @@ python-baseapp/
 │   └── tests/          # Python tests
 │       ├── conftest.py
 │       ├── integration/
-│       ├── test_library.py
-│       ├── test_main.py
 │       └── unit/
-├── pyproject.toml       # Python project metadata
+├── pyproject.toml       # Python project metadata & tool config
+├── .pre-commit-config.yaml # Pre-commit hook configuration
 └── .env.example         # Environment variable template
 ```
 

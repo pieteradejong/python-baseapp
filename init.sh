@@ -95,6 +95,10 @@ echo -e "${green}📦 Installing Python dependencies ...${reset}"
 python -m pip install --upgrade pip
 python -m pip install -r backend/requirements.txt
 
+# Install pre-commit hooks
+echo -e "${green}🔗 Installing pre-commit hooks ...${reset}"
+pre-commit install
+
 # Frontend setup: auto-create Vite React app if missing
 if [ ! -d "frontend" ]; then
     echo -e "${green}⚡ Creating frontend/ with Vite + React ...${reset}"
