@@ -48,6 +48,7 @@ jobs:
       with:
         node-version: '20'
         cache: ${{ steps.check_frontend.outputs.lockfile_exists == 'true' && 'npm' || '' }}
+        cache-dependency-path: ${{ steps.check_frontend.outputs.lockfile_exists == 'true' && 'frontend/package-lock.json' || '' }}
 
     - name: Cache pip dependencies
       uses: actions/cache@v4
@@ -62,7 +63,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') }}
+        key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json', 'frontend/npm-shrinkwrap.json', 'frontend/yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-node-
 
@@ -71,7 +72,7 @@ jobs:
         python -m venv venv
         source venv/bin/activate
         python -m pip install --upgrade pip
-        python -m pip install -r requirements.txt
+        python -m pip install -r backend/requirements.txt
 
     - name: Install frontend dependencies (if frontend exists)
       if: steps.check_frontend.outputs.frontend_exists == 'true'
@@ -82,17 +83,17 @@ jobs:
     - name: Lint (backend)
       run: |
         source venv/bin/activate
-        ruff check --diff .
+        ruff check --diff backend/
 
     - name: Type check (backend)
       run: |
         source venv/bin/activate
-        mypy --strict --ignore-missing-imports src app tests
+        mypy --strict --ignore-missing-imports backend/src backend/tests
 
     - name: Run tests (backend)
       run: |
         source venv/bin/activate
-        pytest --cov=src --cov=app --cov-report=term-missing
+        pytest backend/tests/ --cov=backend/src --cov-report=term-missing
 
     - name: Lint (frontend) (if frontend exists)
       if: steps.check_frontend.outputs.frontend_exists == 'true'
@@ -109,7 +110,7 @@ jobs:
     - name: Run pytest with coverage
       run: |
         source venv/bin/activate
-        pytest --cov=src --cov-report=xml --cov-report=term-missing
+        pytest backend/tests/ --cov=backend/src --cov-report=xml --cov-report=term-missing
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -136,10 +137,10 @@ jobs:
         pip install bandit safety
 
     - name: Run Bandit security checks
-      run: bandit -c pyproject.toml -r src/
+      run: bandit -c pyproject.toml -r backend/src/
 
     - name: Check dependencies for known vulnerabilities
-      run: safety check
+      run: safety check --file backend/requirements.txt
 
   build:
     name: Build and Package
