@@ -151,7 +151,7 @@ check_frontend_deps() {
     echo "✅ Frontend dependencies are installed"
 }
 
-print_section "🚀 Starting TV Show Chat Application"
+print_section "🚀 Starting Application"
 
 # Check Python version
 check_python_version

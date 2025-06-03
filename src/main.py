@@ -6,9 +6,12 @@ and logging setup.
 """
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 from library import AppConfig, config, setup_logging
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 
 def init_app(config_path: Optional[Path] = None) -> None:
@@ -50,6 +53,32 @@ def main() -> None:
         raise
     finally:
         logger.info("Application shutdown complete")
+
+
+class APIError(BaseModel):
+    detail: str
+    code: Optional[str] = None
+    extra: Optional[Any] = None
+
+app = FastAPI()
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=APIError(detail=exc.detail, code=str(exc.status_code)).dict(),
+    )
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content=APIError(detail="Internal server error", code="internal_error").dict(),
+    )
+
+@app.get("/notfound")
+async def not_found_example():
+    raise HTTPException(status_code=404, detail="Item not found")
 
 
 if __name__ == "__main__":

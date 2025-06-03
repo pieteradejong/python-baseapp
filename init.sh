@@ -46,8 +46,8 @@ fi
 
 # List of required environment variables (update as needed for your project)
 required_vars=(
-    "EXAMPLE_API_KEY"
-    "EXAMPLE_API_SECRET"
+    # "EXAMPLE_API_KEY"
+    # "EXAMPLE_API_SECRET"
     # Add more required variables here
 )
 missing_vars=()
