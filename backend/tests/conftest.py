@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
-from library import AppConfig
+from backend.src.library import AppConfig
 
 @pytest.fixture
 def temp_env_file() -> Generator[Path, None, None]:

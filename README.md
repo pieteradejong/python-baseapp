@@ -10,6 +10,7 @@ A minimal, lean Python web application template that provides a clean starting p
 - 📦 **No External Services**: Runs without Redis, databases, or other external dependencies
 - 🛠️ **Modern Tooling**: Latest stable versions of core tools
 - 🧪 **Testing Ready**: Basic testing setup without over-engineering
+- 🔐 **Security Headers**: Production-ready security features
 
 ## Project Philosophy
 
@@ -28,6 +29,7 @@ Instead, it focuses on:
 - ✅ Clear, maintainable code
 - ✅ Practical best practices
 - ✅ Easy onboarding for new developers
+- ✅ Production-ready security
 
 ## Tech Stack
 
@@ -43,7 +45,7 @@ Instead, it focuses on:
   - Black 24.2.0 - Code formatting
   - Ruff 0.2.2 - Fast Python linter (replaces multiple tools)
   - MyPy 1.8.0 - Static type checking
-- **Testing**: pytest 7.2.0 - Testing framework
+- **Testing**: pytest 8.3.5 - Testing framework with coverage support
 - **Environment**: python-dotenv 1.0.1 - Environment variable management
 
 ### Frontend (Optional)
@@ -60,10 +62,14 @@ Instead, it focuses on:
   - Automatic request validation
   - Async support
   - High performance
+- 🔐 Security features built-in
+  - Security headers (X-Content-Type-Options, X-Frame-Options, etc.)
+  - CORS configuration
+  - Production-ready error handling
 - ⚡ Modern frontend with Vite/React (optional)
 - 🔒 Type-safe configuration management with pydantic
 - 📝 Comprehensive logging system
-- 🧪 Testing setup with pytest
+- 🧪 Testing setup with pytest and coverage
 - 🎨 Code formatting with Black
 - 🔍 Linting with Ruff
 - 🔄 CI/CD ready
@@ -72,7 +78,7 @@ Instead, it focuses on:
 
 We maintain a minimal set of dependencies to keep the project lean and maintainable:
 
-### Core Dependencies (requirements.txt)
+### Core Dependencies (backend/requirements.txt)
 ```
 fastapi==0.109.2    # Web framework
 uvicorn==0.27.1     # ASGI server
@@ -86,7 +92,9 @@ python-dotenv==1.0.1 # Environment variables
 black==24.2.0       # Code formatting
 ruff==0.2.2         # Linting (replaces multiple tools)
 mypy==1.8.0         # Type checking
-pytest==7.2.0       # Testing
+pytest==8.3.5       # Testing
+pytest-cov==6.0.0   # Test coverage
+httpx==0.27.0       # HTTP client for testing
 ```
 
 Key points about our dependencies:
@@ -167,7 +175,7 @@ Key points about our dependencies:
 
 ### Configuration
 
-1. Create a `.env` file in the project root:
+1. Create a `.env` file in the project root (or copy from `.env.example`):
    ```env
    APP_ENV=development
    APP_DEBUG=true
@@ -176,7 +184,7 @@ Key points about our dependencies:
    API_HOST=0.0.0.0
    API_PORT=8000
    LOG_LEVEL=INFO
-   LOG_FILE=app/logs/app.log
+   # LOG_FILE=backend/logs/app.log  # Uncomment to enable file logging
    # Add any required secrets or API keys here (never hardcode in code)
    ```
 
@@ -187,7 +195,7 @@ export APP_DEBUG=true
 # ...
 ```
 
-2. Create a `config.json` for application settings:
+2. Create a `config.json` for application settings (optional):
    ```json
    {
        "CANDIDATE_ID": "your-id-here"
@@ -209,7 +217,20 @@ export APP_DEBUG=true
 
 2. View logs:
    ```bash
-   tail -f app/logs/backend.log app/logs/frontend.log
+   tail -f backend/logs/backend.log backend/logs/frontend.log
+   ```
+
+3. Test the API endpoints:
+   ```bash
+   # App info
+   curl http://localhost:8000/
+   
+   # Health checks
+   curl http://localhost:8000/health
+   curl http://localhost:8000/health/model
+   
+   # API documentation
+   open http://localhost:8000/docs
    ```
 
 ### Troubleshooting
@@ -250,7 +271,7 @@ If you encounter issues:
    
    # Reinstall dependencies
    python -m pip install --upgrade pip
-   python -m pip install -r requirements.txt
+   python -m pip install -r backend/requirements.txt
    ```
 
 ### Testing
@@ -259,7 +280,7 @@ This project follows a lean, practical testing approach focused on critical func
 
 #### Test Structure
 ```
-tests/
+backend/tests/
 ├── conftest.py           # Shared test fixtures
 ├── unit/                 # Unit tests
 │   ├── test_config.py   # Configuration tests
@@ -273,29 +294,26 @@ tests/
 
 1. **Run all tests**:
    ```bash
-   pytest
+   source venv/bin/activate
+   pytest backend/tests/
    ```
 
 2. **Run with coverage**:
    ```bash
-   pytest --cov=src
+   source venv/bin/activate
+   pytest backend/tests/ --cov=backend/src
    ```
 
 3. **Run specific test categories**:
    ```bash
    # Run unit tests only
-   pytest tests/unit/
+   pytest backend/tests/unit/
    
    # Run integration tests only
-   pytest tests/integration/
+   pytest backend/tests/integration/
    
    # Run specific test file
-   pytest tests/unit/test_config.py
-   ```
-
-4. **Run tests in parallel** (faster):
-   ```bash
-   pytest -n auto
+   pytest backend/tests/unit/test_config.py
    ```
 
 #### Test Categories
@@ -340,72 +358,38 @@ We avoid:
 - ❌ Test duplication
 - ❌ Over-engineering
 
-#### Test Development
-
-1. **Adding New Tests**:
-   ```python
-   # tests/unit/test_example.py
-   def test_feature():
-       """Test description."""
-       # Arrange
-       setup = create_test_setup()
-       
-       # Act
-       result = feature_under_test(setup)
-       
-       # Assert
-       assert result == expected_value
-   ```
-
-2. **Using Fixtures**:
-   ```python
-   # Use existing fixtures
-   def test_with_fixture(app_config):
-       assert app_config.ENV == "testing"
-   
-   # Create new fixtures in conftest.py
-   @pytest.fixture
-   def new_fixture():
-       # Setup
-       resource = create_resource()
-       yield resource
-       # Cleanup
-       resource.cleanup()
-   ```
-
-3. **Best Practices**:
-   - Keep tests focused and atomic
-   - Use descriptive test names
-   - Document test purpose
-   - Clean up resources
-   - Use appropriate assertions
-   - Handle edge cases
-   - Test error conditions
-
-#### CI/CD Integration
-
-Tests are automatically run:
-- On every pull request
-- Before merging to main
-- With coverage reporting
-- In parallel for speed
-- With security checks
-
 ### Project Structure
 
 ```
 python-baseapp/
-├── src/               # Core application code
-├── app/              # Application package
-│   ├── api/         # FastAPI routes
-│   ├── models/      # Data models
-│   └── logs/        # Application logs
-├── frontend/         # React frontend
-├── tests/           # Test suite
-├── .env             # Environment variables
-├── config.json      # Application config
-├── requirements.txt # Python dependencies
-└── run.sh          # Service management
+├── LICENSE
+├── README.md
+├── activate.sh           # Virtual environment activation
+├── init.sh              # Environment setup
+├── run.sh               # Service management
+├── venv/                # Python virtual environment (not tracked by git)
+├── frontend/            # Frontend code (Vite React app)
+│   ├── src/            # React components and logic
+│   ├── public/         # Static assets
+│   ├── vite.config.js  # Vite config
+│   ├── package.json
+│   ├── package-lock.json
+│   └── ...
+├── backend/             # Python backend code (FastAPI)
+│   ├── src/
+│   │   ├── main.py     # FastAPI app entrypoint
+│   │   ├── __init__.py
+│   │   └── library.py  # Shared backend logic
+│   ├── requirements.txt # Python dependencies
+│   ├── logs/           # Application logs
+│   └── tests/          # Python tests
+│       ├── conftest.py
+│       ├── integration/
+│       ├── test_library.py
+│       ├── test_main.py
+│       └── unit/
+├── pyproject.toml       # Python project metadata
+└── .env.example         # Environment variable template
 ```
 
 ## Best Practices
@@ -437,16 +421,12 @@ This project follows strict development standards:
    - Comprehensive logging
 
 5. **Security Best Practices**
-   - Validate all input
-   - Use type-safe security checks
-   - Regular dependency updates
-   - Secure error handling
-   - Proper authentication
-   - Rate limiting
-   - Security headers
-   - CORS and CSP
-   - No security theater
-   - Focus on real threats
+   - Security headers (X-Content-Type-Options, X-Frame-Options, etc.)
+   - CORS configuration
+   - Input validation at boundaries
+   - Secure error handling (no information leakage)
+   - Environment-aware security settings
+   - No hardcoded secrets
 
 6. **Development Velocity**
    - Fast local development

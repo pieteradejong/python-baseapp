@@ -49,17 +49,17 @@ wait_for_service() {
         fi
         
         echo "Attempt $attempt/$max_attempts: $service not ready yet..."
-        if [ -f "app/logs/backend.log" ]; then
+        if [ -f "backend/logs/backend.log" ]; then
             echo "Latest backend logs:"
-            tail -n 5 app/logs/backend.log
+            tail -n 5 backend/logs/backend.log
         fi
         sleep 2
         attempt=$((attempt + 1))
     done
     echo "❌ $service failed to start after $max_attempts attempts"
-    if [ -f "app/logs/backend.log" ]; then
+    if [ -f "backend/logs/backend.log" ]; then
         echo "Backend logs:"
-        cat app/logs/backend.log
+        cat backend/logs/backend.log
     fi
     return 1
 }
@@ -119,7 +119,7 @@ check_python_version() {
 
 # Function to check required environment variables
 check_env_vars() {
-    local required_vars=("OPENAI_API_KEY")
+    local required_vars=()  # Empty by default - add variables as needed for your specific app
     local missing_vars=()
     
     for var in "${required_vars[@]}"; do
@@ -192,12 +192,12 @@ fi
 echo "✅ uvicorn is installed in virtual environment"
 
 # Create logs directory if it doesn't exist
-mkdir -p app/logs
+mkdir -p backend/logs
 
 # Start Backend
 print_section "Starting Backend"
 # Use the virtual environment's Python and uvicorn explicitly
-start_service "backend" "python3.12 -m uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload" "app/logs/backend.log"
+start_service "backend" "python3.12 -m uvicorn backend.src.main:app --host 0.0.0.0 --port 8000 --reload" "backend/logs/backend.log"
 
 # Wait for backend to be ready
 wait_for_service "Backend" "http://localhost:8000/health" "200" 10
@@ -212,7 +212,7 @@ fi
 print_section "Starting Frontend"
 check_frontend_deps
 cd frontend
-start_service "frontend" "npm run dev" "../app/logs/frontend.log"
+start_service "frontend" "npm run dev" "../backend/logs/frontend.log"
 cd ..
 
 # Wait for frontend to be ready (using port check instead of HTTP status)
@@ -231,4 +231,4 @@ echo ""
 echo "Press Ctrl+C to stop all services"
 
 # Keep the script running and show logs
-tail -f app/logs/backend.log app/logs/frontend.log 
+tail -f backend/logs/backend.log backend/logs/frontend.log 

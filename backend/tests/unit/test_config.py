@@ -1,9 +1,10 @@
 """Tests for configuration management."""
 import os
+import tempfile
 from pathlib import Path
 
 import pytest
-from library import AppConfig, load_json_config
+from backend.src.library import AppConfig, load_json_config
 
 def test_app_config_defaults() -> None:
     """Test AppConfig default values."""

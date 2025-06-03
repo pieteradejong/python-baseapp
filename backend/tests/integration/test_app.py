@@ -7,8 +7,8 @@ from typing import Generator
 import pytest
 from fastapi.testclient import TestClient
 
-from src.main import init_app, main
-from library import AppConfig
+from backend.src.main import init_app, main
+from backend.src.library import AppConfig
 
 @pytest.fixture
 def test_env_vars() -> Generator[None, None, None]:

@@ -93,7 +93,7 @@ rm -rf .pytest_cache .ruff_cache
 # Install Python dependencies
 echo -e "${green}📦 Installing Python dependencies ...${reset}"
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install -r backend/requirements.txt
 
 # Frontend setup: auto-create Vite React app if missing
 if [ ! -d "frontend" ]; then
