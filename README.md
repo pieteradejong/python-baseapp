@@ -95,6 +95,7 @@ mypy==1.8.0         # Type checking
 pytest==8.3.5       # Testing
 pytest-cov==6.0.0   # Test coverage
 httpx==0.27.0       # HTTP client for testing
+pre-commit==4.0.1   # Git hooks for code quality
 ```
 
 Key points about our dependencies:
@@ -112,11 +113,11 @@ Key points about our dependencies:
   ```bash
   # macOS
   brew install python@3.12
-  
+
   # Ubuntu/Debian
   sudo apt update
   sudo apt install python3.12 python3.12-venv
-  
+
   # Verify installation
   python3.12 --version  # Should show Python 3.12.2
   ```
@@ -124,11 +125,11 @@ Key points about our dependencies:
   ```bash
   # macOS
   brew install node@18
-  
+
   # Ubuntu/Debian
   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
   sudo apt install nodejs
-  
+
   # Verify installation
   node --version  # Should show v18.x.x
   ```
@@ -136,7 +137,7 @@ Key points about our dependencies:
   ```bash
   # macOS
   brew install git
-  
+
   # Ubuntu/Debian
   sudo apt install git
   ```
@@ -224,11 +225,11 @@ export APP_DEBUG=true
    ```bash
    # App info
    curl http://localhost:8000/
-   
+
    # Health checks
    curl http://localhost:8000/health
    curl http://localhost:8000/health/model
-   
+
    # API documentation
    open http://localhost:8000/docs
    ```
@@ -241,11 +242,11 @@ If you encounter issues:
    ```bash
    # Check Python version
    python3.12 --version  # Should show Python 3.12.2
-   
+
    # If using a different version, install Python 3.12.2
    # macOS
    brew install python@3.12
-   
+
    # Ubuntu/Debian
    sudo apt update
    sudo apt install python3.12 python3.12-venv
@@ -255,11 +256,11 @@ If you encounter issues:
    ```bash
    # Remove existing virtual environment
    rm -rf venv
-   
+
    # Recreate with correct Python version
    python3.12 -m venv venv
    source venv/bin/activate
-   
+
    # Verify Python version in virtual environment
    python --version  # Should show Python 3.12.2
    ```
@@ -268,7 +269,7 @@ If you encounter issues:
    ```bash
    # Ensure you're in the virtual environment
    source venv/bin/activate
-   
+
    # Reinstall dependencies
    python -m pip install --upgrade pip
    python -m pip install -r backend/requirements.txt
@@ -308,10 +309,10 @@ backend/tests/
    ```bash
    # Run unit tests only
    pytest backend/tests/unit/
-   
+
    # Run integration tests only
    pytest backend/tests/integration/
-   
+
    # Run specific test file
    pytest backend/tests/unit/test_config.py
    ```
